@@ -39,9 +39,9 @@ BENCHMARK_PATH = os.path.join(os.path.join(
 )
 
 BENCHMARK_DATA = pd.read_csv(S3_URL.format(
-    BUCKET, 'datasets.csv'), index_col=0, header=None).applymap(ast.literal_eval).to_dict()[1]
+    BUCKET, 'datasets.csv'), index_col=0, header=None).map(ast.literal_eval).to_dict()[1]
 BENCHMARK_PARAMS = pd.read_csv(S3_URL.format(
-    BUCKET, 'parameters.csv'), index_col=0, header=None).applymap(ast.literal_eval).to_dict()[1]
+    BUCKET, 'parameters.csv'), index_col=0, header=None).map(ast.literal_eval).to_dict()[1]
 
 PIPELINE_DIR = os.path.join(os.path.dirname(__file__), 'pipelines', 'verified')
 

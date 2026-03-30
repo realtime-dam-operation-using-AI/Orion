@@ -12,7 +12,6 @@ import tempfile
 import numpy as np
 import tensorflow as tf
 from mlstars.utils import import_object
-from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 
@@ -76,7 +75,7 @@ class VAE(object):
 
         for network in networks:
             with tempfile.NamedTemporaryFile(suffix='.hdf5', delete=False) as fd:
-                tf.keras.models.save_model(state.pop(network), fd.name, overwrite=True)
+                tf.keras.models.save_model(state.pop(network), fd.name)
 
                 state[network + '_str'] = fd.read()
 
@@ -155,12 +154,12 @@ class VAE(object):
     def _sampling(self, args):
         z_mean, z_log_sigma = args
         batch_size = tf.shape(z_mean)[0]
-        epsilon = K.random_normal(shape=(batch_size, self.latent_dim), mean=0., stddev=1.)
+        epsilon = tf.random.normal(shape=(batch_size, self.latent_dim), mean=0., stddev=1.)
         return z_mean + z_log_sigma * epsilon
 
     def _vae_loss(self, y_true, y_pred, z_log_sigma, z_mean):
         rc_loss = self.mse_loss(y_true, y_pred)
-        kl_loss = - 0.5 * K.mean(1 + z_log_sigma - K.square(z_mean) - K.exp(z_log_sigma))
+        kl_loss = - 0.5 * tf.reduce_mean(1 + z_log_sigma - tf.square(z_mean) - tf.exp(z_log_sigma))
         loss = rc_loss + kl_loss
         return loss
 

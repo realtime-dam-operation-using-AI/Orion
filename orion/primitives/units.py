@@ -887,7 +887,7 @@ class UniTS(object):
                 batch_x = batch_x.float()
                 batch_y = batch_y.float()
 
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast(device_type='cuda' if torch.cuda.is_available() else 'cpu'):
                     outputs = self.model(batch_x)
 
                 f_dim = 0

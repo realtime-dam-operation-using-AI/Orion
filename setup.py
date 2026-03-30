@@ -17,10 +17,10 @@ except IOError:
 
 
 install_requires = [
-    'tensorflow>=2.2,<2.15',
-    'numpy>=1.17.5,<2',
+    'tensorflow>=2.16,<2.21',    # CUDA 12.3+ 빌드; CUDA 12.6/12.8 forward compatible
+    'numpy>=1.24,<2',            # TF 2.16+ requires numpy >= 1.23
     'pandas>=1,<3',
-    'numba>=0.48,<0.60',
+    'numba>=0.59,<0.62',         # numpy 1.24+ 및 Python 3.11 지원
     's3fs>=0.2.2,<0.5',
     'mlblocks>=0.6.2,<0.7',
     'ml-stars>=0.2.1.dev0,<0.4',
@@ -28,15 +28,15 @@ install_requires = [
     'scipy<1.14',
     'tabulate>=0.8.3,<0.9',
     'pyts>=0.11,<0.14',
-    'torch>=1.4,<2.6',
+    'torch>=2.5,<2.9',           # cu126 (CUDA 12.6): 2.5/2.6, cu128 (CUDA 12.8): 2.7+
     'azure-cognitiveservices-anomalydetector>=0.3,<0.4',
     'xlsxwriter>=1.3.6,<1.4',
     'tqdm>=4.36.1',
     'stumpy>=1.7,<1.11',
     'ncps',
 
-    # fix conflict
-    'protobuf<4',
+    # TF 2.16+ requires protobuf >= 3.20
+    'protobuf>=3.20,<6',
 ]
 
 pretrained_requires = [
@@ -118,10 +118,10 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     description="Orion is a machine learning library built for unsupervised time series anomaly detection.",
     entry_points={
@@ -146,7 +146,7 @@ setup(
     long_description_content_type='text/markdown',
     name='orion-ml',
     packages=find_packages(include=['orion', 'orion.*']),
-    python_requires='>=3.8,<3.12',
+    python_requires='>=3.9,<3.13',
     setup_requires=setup_requires,
     test_suite='tests',
     tests_require=tests_require,

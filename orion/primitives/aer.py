@@ -60,7 +60,7 @@ class AER(object):
 
         for network in networks:
             with tempfile.NamedTemporaryFile(suffix='.hdf5', delete=False) as fd:
-                tf.keras.models.save_model(state.pop(network), fd.name, overwrite=True)
+                tf.keras.models.save_model(state.pop(network), fd.name)
 
                 state[network + '_str'] = fd.read()
 

@@ -88,7 +88,7 @@ class TokenEmbedding(nn.Module):
     def __init__(self, input_size, d_model):
         super(TokenEmbedding, self).__init__()
 
-        padding = 1 if torch.__version__ >= '1.5.0' else 2
+        padding = 1
         self.tokenConv = nn.Conv1d(in_channels=input_size, out_channels=d_model,
                                    kernel_size=3, padding=padding, padding_mode='circular',
                                    bias=False)

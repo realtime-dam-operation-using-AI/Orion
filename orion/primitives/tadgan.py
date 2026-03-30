@@ -16,7 +16,7 @@ from tensorflow.keras import Model
 from orion.primitives.timeseries_errors import reconstruction_errors
 
 LOGGER = logging.getLogger(__name__)
-tf.keras.backend.set_floatx('float64')
+tf.keras.mixed_precision.set_global_policy('float64')
 
 LOSS_NAMES = [
     ['cx_loss', 'cx_real', 'cx_fake', 'cx_gp'],
@@ -166,7 +166,7 @@ class TadGAN:
 
         for network in networks:
             with tempfile.NamedTemporaryFile(suffix='.hdf5', delete=False) as fd:
-                tf.keras.models.save_model(state.pop(network), fd.name, overwrite=True)
+                tf.keras.models.save_model(state.pop(network), fd.name)
                 state[network + '_str'] = fd.read()
 
         return state
