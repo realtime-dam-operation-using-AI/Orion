@@ -874,7 +874,15 @@ class UniTS(object):
 
         with smart_open(self.load_path, 'rb') as f:
             buffer = io.BytesIO(f.read())
-            self.model.load_state_dict(torch.load(buffer, map_location='cpu'), strict=False)
+            # PyTorch 2.6+ changed torch.load default to weights_only=True.
+            # Some legacy checkpoints require full unpickling to load state_dict.
+            try:
+                state_dict = torch.load(buffer, map_location='cpu', weights_only=True)
+            except Exception:
+                buffer.seek(0)
+                state_dict = torch.load(buffer, map_location='cpu', weights_only=False)
+
+            self.model.load_state_dict(state_dict, strict=False)
 
         pred_len = self.pred_len
 

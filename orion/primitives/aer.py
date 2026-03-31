@@ -18,12 +18,19 @@ LOGGER = logging.getLogger(__name__)
 def build_layer(layer: dict, hyperparameters: dict):
     layer_class = import_object(layer['class'])
     layer_kwargs = layer['parameters'].copy()
-    # TODO: Upgrade to using tf.keras.layers.Wrapper in mlprimitives.
-    if issubclass(layer_class, tf.keras.layers.Wrapper):
-        layer_kwargs['layer'] = build_layer(layer_kwargs['layer'], hyperparameters)
-    for key, value in layer_kwargs.items():
+
+    def _resolve(value):
+        # Keras 3 wrappers may not inherit from tf.keras.layers.Wrapper.
+        if isinstance(value, dict) and {'class', 'parameters'}.issubset(value.keys()):
+            return build_layer(value, hyperparameters)
+        if isinstance(value, list):
+            return [_resolve(item) for item in value]
         if isinstance(value, str):
-            layer_kwargs[key] = hyperparameters.get(value, value)
+            return hyperparameters.get(value, value)
+        return value
+
+    for key, value in layer_kwargs.items():
+        layer_kwargs[key] = _resolve(value)
     return layer_class(**layer_kwargs)
 
 

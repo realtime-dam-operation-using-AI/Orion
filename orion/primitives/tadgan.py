@@ -28,13 +28,20 @@ LOSS_NAMES = [
 def build_layer(layer: dict, hyperparameters: dict):
     layer_class = import_object(layer['class'])
     layer_kwargs = layer['parameters'].copy()
-    # TODO: Upgrade to using tf.keras.layers.Wrapper in mlprimitives.
-    if issubclass(layer_class, tf.keras.layers.Wrapper):
-        layer_kwargs['layer'] = build_layer(layer_kwargs['layer'], hyperparameters)
+
+    def _resolve(value):
+        # Keras 3 no longer exposes some wrappers as tf.keras.layers.Wrapper subclasses.
+        # Resolve nested layer specs by shape instead of inheritance checks.
+        if isinstance(value, dict) and {'class', 'parameters'}.issubset(value.keys()):
+            return build_layer(value, hyperparameters)
+        if isinstance(value, list):
+            return [_resolve(item) for item in value]
+        if isinstance(value, str):
+            return hyperparameters.get(value, value)
+        return value
 
     for key, value in layer_kwargs.items():
-        if isinstance(value, str):
-            layer_kwargs[key] = hyperparameters.get(value, value)
+        layer_kwargs[key] = _resolve(value)
 
     return layer_class(**layer_kwargs)
 
@@ -104,9 +111,15 @@ class TadGAN:
     @staticmethod
     def _gradient_penalty_loss_wrapper(critic):
         def _gradient_penalty_loss(real, fake):
+            # Keras can provide mixed dtypes (e.g. y_true float64, y_pred float32).
+            # Keep all arithmetic in the critic output dtype to avoid type mismatches.
+            dtype = fake.dtype
+            real = tf.cast(real, dtype)
+            fake = tf.cast(fake, dtype)
+
             # Random weighted average to create interpolated signals.
             batch_size = tf.shape(real)[0]
-            alpha = tf.random.uniform([batch_size, 1, 1], dtype=tf.float64)
+            alpha = tf.random.uniform([batch_size, 1, 1], dtype=dtype)
             interpolated = (alpha * real) + ((1 - alpha) * fake)
 
             # Get the critic output for this interpolated signal.
